@@ -1,0 +1,10 @@
+# Placeholder for static images
+
+Place your product images and other static assets here.
+
+The project currently uses placeholder images from https://via.placeholder.com/
+
+To use local images:
+1. Add your images to this directory
+2. Update the `image` URLs in `src/data/products.json`
+3. Configure `next.config.js` if using external image domains

@@ -1,0 +1,502 @@
+[
+  {
+    "id": 1,
+    "name": "Wireless Noise-Canceling Headphones",
+    "description": "Premium over-ear headphones with active noise cancellation. Designed for immersive sound and long comfort sessions.",
+    "price": 89.99,
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
+    "category": "Electronics",
+    "stock": 45,
+    "rating": 4.8
+  },
+  {
+    "id": 2,
+    "name": "Smart LED Desk Lamp",
+    "description": "Touch-sensitive lamp with adjustable brightness and color temperature. Perfect for study or workspace lighting.",
+    "price": 14.99,
+    "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&q=80",
+    "category": "Home",
+    "stock": 78,
+    "rating": 4.6
+  },
+  {
+    "id": 3,
+    "name": "Bluetooth Portable Speaker",
+    "description": "Compact speaker with deep bass and 12-hour battery life. Water-resistant and ideal for outdoor fun.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&q=80",
+    "category": "Electronics",
+    "stock": 62,
+    "rating": 4.7
+  },
+  {
+    "id": 4,
+    "name": "Ergonomic Office Chair",
+    "description": "Adjustable mesh chair with lumbar support and 360° swivel. Built for long work-from-home hours.",
+    "price": 104.99,
+    "image": "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=500&q=80",
+    "category": "Home",
+    "stock": 18,
+    "rating": 4.9
+  },
+  {
+    "id": 5,
+    "name": "Wireless Gaming Mouse",
+    "description": "Ultra-responsive mouse with RGB lighting and programmable buttons. Optimized for speed and precision.",
+    "price": 19.99,
+    "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&q=80",
+    "category": "Electronics",
+    "stock": 91,
+    "rating": 4.5
+  },
+  {
+    "id": 6,
+    "name": "Mechanical Gaming Keyboard",
+    "description": "RGB backlit keyboard with tactile blue switches. Built for durability and a satisfying typing experience.",
+    "price": 35.99,
+    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&q=80",
+    "category": "Electronics",
+    "stock": 54,
+    "rating": 4.8
+  },
+  {
+    "id": 7,
+    "name": "4K Action Camera",
+    "description": "Compact waterproof camera with 170° wide lens. Records high-quality video for travel and adventure.",
+    "price": 57.99,
+    "image": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&q=80",
+    "category": "Electronics",
+    "stock": 29,
+    "rating": 4.7
+  },
+  {
+    "id": 8,
+    "name": "Smart Fitness Band",
+    "description": "Tracks heart rate, sleep, and steps with long battery life. Syncs seamlessly with your phone.",
+    "price": 12.99,
+    "image": "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=500&q=80",
+    "category": "Fitness",
+    "stock": 103,
+    "rating": 4.4
+  },
+  {
+    "id": 9,
+    "name": "Wireless Charging Pad",
+    "description": "Fast-charging Qi pad for phones and earbuds. Sleek design fits any desk setup.",
+    "price": 8.99,
+    "image": "https://imgs.search.brave.com/DvgOlxamAiZZD3E-Yb6NOpYLXlXudH87m_83yHDKgMg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NTFwYkt6ckFkOUwu/anBn",
+    "category": "Electronics",
+    "stock": 127,
+    "rating": 4.5
+  },
+  {
+    "id": 10,
+    "name": "Mini Air Purifier",
+    "description": "Removes dust and allergens from small spaces. Whisper-quiet operation ideal for bedrooms.",
+    "price": 25.99,
+    "image": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80",
+    "category": "Home",
+    "stock": 41,
+    "rating": 4.6
+  },
+  {
+    "id": 11,
+    "name": "USB-C Multiport Hub",
+    "description": "7-in-1 hub with HDMI, USB, and SD card ports. Perfect for laptops and creators on the go.",
+    "price": 16.99,
+    "image": "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=500&q=80",
+    "category": "Electronics",
+    "stock": 85,
+    "rating": 4.7
+  },
+  {
+    "id": 12,
+    "name": "Smart Home Plug",
+    "description": "Wi-Fi plug to control appliances via mobile app or voice assistant. Simple setup and scheduling options.",
+    "price": 8.99,
+    "image": "https://imgs.search.brave.com/cvYNUTtmeQV1eYLUC0hNERaQLQem6OW3iP8qjp03sJg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjF5RjFoYlpjVkwu/anBn",
+    "category": "Electronics",
+    "stock": 142,
+    "rating": 4.4
+  },
+  {
+    "id": 13,
+    "name": "Portable SSD 1TB",
+    "description": "Super-fast external SSD for data transfer and backup. Shock-resistant and compact for travel.",
+    "price": 69.99,
+    "image": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=500&q=80",
+    "category": "Electronics",
+    "stock": 34,
+    "rating": 4.8
+  },
+  {
+    "id": 14,
+    "name": "Noise-Isolating Earbuds",
+    "description": "In-ear design for deep bass and secure fit. Includes charging case with LED battery indicator.",
+    "price": 21.99,
+    "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&q=80",
+    "category": "Electronics",
+    "stock": 96,
+    "rating": 4.6
+  },
+  {
+    "id": 15,
+    "name": "Smartwatch Pro Series",
+    "description": "AMOLED display, fitness tracking, and Bluetooth calls. Water-resistant and stylish for everyday use.",
+    "price": 64.99,
+    "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80",
+    "category": "Electronics",
+    "stock": 52,
+    "rating": 4.7
+  },
+  {
+    "id": 16,
+    "name": "Laptop Cooling Pad",
+    "description": "Dual-fan cooling pad reduces heat during intense work or gaming. Adjustable height and LED lights.",
+    "price": 11.99,
+    "image": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&q=80",
+    "category": "Electronics",
+    "stock": 73,
+    "rating": 4.3
+  },
+  {
+    "id": 17,
+    "name": "Compact Bluetooth Keyboard",
+    "description": "Slim wireless keyboard with silent keys and long battery life. Works with laptops, tablets, and TVs.",
+    "price": 15.99,
+    "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=500&q=80",
+    "category": "Electronics",
+    "stock": 68,
+    "rating": 4.5
+  },
+  {
+    "id": 18,
+    "name": "Foldable Laptop Stand",
+    "description": "Aluminium stand improves posture and airflow. Lightweight and portable for easy use anywhere.",
+    "price": 9.99,
+    "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&q=80",
+    "category": "Accessories",
+    "stock": 115,
+    "rating": 4.4
+  },
+  {
+    "id": 19,
+    "name": "Smart Security Camera",
+    "description": "1080p HD indoor camera with motion detection and night vision. Connects to your smartphone app.",
+    "price": 28.99,
+    "image": "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&q=80",
+    "category": "Electronics",
+    "stock": 47,
+    "rating": 4.7
+  },
+  {
+    "id": 20,
+    "name": "Wi-Fi Range Extender",
+    "description": "Boosts your home network coverage. Simple setup via WPS and dual-band connectivity.",
+    "price": 17.99,
+    "image": "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?w=500&q=80",
+    "category": "Electronics",
+    "stock": 81,
+    "rating": 4.5
+  },
+  {
+    "id": 21,
+    "name": "Smart Coffee Maker",
+    "description": "App-controlled coffee maker with auto-brew schedules. Brews perfect coffee every morning.",
+    "price": 45.99,
+    "image": "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=500&q=80",
+    "category": "Home",
+    "stock": 33,
+    "rating": 4.8
+  },
+  {
+    "id": 22,
+    "name": "Electric Kettle",
+    "description": "Stainless steel kettle with auto shut-off and 1.7L capacity. Fast boiling and energy-efficient.",
+    "price": 14.99,
+    "image": "https://images.unsplash.com/photo-1563299796-17596ed6b017?w=500&q=80",
+    "category": "Home",
+    "stock": 92,
+    "rating": 4.6
+  },
+  {
+    "id": 23,
+    "name": "Smart Light Strip",
+    "description": "RGB LED light strip with app control and music sync. Great for room ambience and decor.",
+    "price": 11.99,
+    "image": "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=500&q=80",
+    "category": "Home",
+    "stock": 108,
+    "rating": 4.7
+  },
+  {
+    "id": 24,
+    "name": "Wireless Power Bank 10000mAh",
+    "description": "Portable charger supports fast wired and wireless charging. Sleek matte design for easy carry.",
+    "price": 18.99,
+    "image": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500&q=80",
+    "category": "Electronics",
+    "stock": 76,
+    "rating": 4.5
+  },
+  {
+    "id": 25,
+    "name": "Mini Projector",
+    "description": "Pocket-sized projector for movies and games. Connects to phone or laptop with HDMI input.",
+    "price": 74.99,
+    "image": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=500&q=80",
+    "category": "Electronics",
+    "stock": 25,
+    "rating": 4.6
+  },
+  {
+    "id": 26,
+    "name": "Bluetooth Car Adapter",
+    "description": "Turns any car stereo into a Bluetooth system. Supports hands-free calls and music streaming.",
+    "price": 7.99,
+    "image": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=500&q=80",
+    "category": "Accessories",
+    "stock": 134,
+    "rating": 4.3
+  },
+  {
+    "id": 27,
+    "name": "Smart Door Lock",
+    "description": "Fingerprint and PIN-enabled smart lock. Secure, easy to install, and smartphone compatible.",
+    "price": 99.99,
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80",
+    "category": "Home",
+    "stock": 21,
+    "rating": 4.8
+  },
+  {
+    "id": 28,
+    "name": "Robot Vacuum Cleaner",
+    "description": "Auto-navigating robot that vacuums and mops. Controlled via mobile app or voice command.",
+    "price": 154.99,
+    "image": "https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=500&q=80",
+    "category": "Home",
+    "stock": 14,
+    "rating": 4.9
+  },
+  {
+    "id": 29,
+    "name": "Smart Mirror",
+    "description": "Touch-enabled mirror displays weather, time, and reminders. Stylish and futuristic home accessory.",
+    "price": 89.99,
+    "image": "https://images.unsplash.com/photo-1618220179428-22790b461013?w=500&q=80",
+    "category": "Home",
+    "stock": 19,
+    "rating": 4.7
+  },
+  {
+    "id": 30,
+    "name": "Portable Monitor 15.6\"",
+    "description": "Full HD external display for laptops and consoles. Slim and lightweight with Type-C input.",
+    "price": 102.99,
+    "image": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&q=80",
+    "category": "Electronics",
+    "stock": 28,
+    "rating": 4.6
+  },
+  {
+    "id": 31,
+    "name": "Wireless Webcam 1080p",
+    "description": "High-quality webcam with noise-canceling mic. Perfect for online meetings and streaming.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&q=80",
+    "category": "Electronics",
+    "stock": 67,
+    "rating": 4.5
+  },
+  {
+    "id": 32,
+    "name": "Smart Air Humidifier",
+    "description": "Adds moisture and fragrance to air. LED light ring adds a relaxing glow for bedrooms.",
+    "price": 13.99,
+    "image": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&q=80",
+    "category": "Home",
+    "stock": 89,
+    "rating": 4.6
+  },
+  {
+    "id": 33,
+    "name": "Electric Toothbrush",
+    "description": "Rechargeable toothbrush with 3 brushing modes. Helps maintain oral hygiene effectively.",
+    "price": 15.99,
+    "image": "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=500&q=80",
+    "category": "Lifestyle",
+    "stock": 94,
+    "rating": 4.7
+  },
+  {
+    "id": 34,
+    "name": "Smart Alarm Clock",
+    "description": "LED clock with Bluetooth speaker and sunrise simulation. Helps you wake naturally.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80",
+    "category": "Home",
+    "stock": 71,
+    "rating": 4.5
+  },
+  {
+    "id": 35,
+    "name": "VR Headset",
+    "description": "Lightweight headset for immersive VR experiences. Compatible with most smartphones.",
+    "price": 29.99,
+    "image": "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=500&q=80",
+    "category": "Electronics",
+    "stock": 38,
+    "rating": 4.4
+  },
+  {
+    "id": 36,
+    "name": "Smart Baby Monitor",
+    "description": "HD video feed and motion alerts for parents. Two-way audio and night vision built in.",
+    "price": 49.99,
+    "image": "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?w=500&q=80",
+    "category": "Home",
+    "stock": 43,
+    "rating": 4.8
+  },
+  {
+    "id": 37,
+    "name": "Smart Scale",
+    "description": "Digital weighing scale with body composition tracking. Syncs data with mobile health apps.",
+    "price": 18.99,
+    "image": "https://images.unsplash.com/photo-1591084728795-1149f32d9866?w=500&q=80",
+    "category": "Fitness",
+    "stock": 58,
+    "rating": 4.6
+  },
+  {
+    "id": 38,
+    "name": "Electric Standing Desk",
+    "description": "Height-adjustable desk with memory presets. Promotes comfort and productivity at work.",
+    "price": 229.99,
+    "image": "https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=500&q=80",
+    "category": "Home",
+    "stock": 11,
+    "rating": 4.9
+  },
+  {
+    "id": 39,
+    "name": "Smart Water Bottle",
+    "description": "Tracks your hydration and reminds you to drink. Glows subtly when it's time to sip.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80",
+    "category": "Lifestyle",
+    "stock": 77,
+    "rating": 4.4
+  },
+  {
+    "id": 40,
+    "name": "Noise Meter Sensor",
+    "description": "Detects and logs noise levels for monitoring environments. Ideal for IoT demos.",
+    "price": 16.99,
+    "image": "https://imgs.search.brave.com/AjnutbpkdHLZZh0skVdN5th42fFKhuzALO2LOCnzs5Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFWZFFGUEtDVkwu/anBn",
+    "category": "Electronics",
+    "stock": 64,
+    "rating": 4.3
+  },
+  {
+    "id": 41,
+    "name": "Solar Power Bank",
+    "description": "Charges via sunlight or USB. Great for outdoor travel and emergencies.",
+    "price": 21.99,
+    "image": "https://images.unsplash.com/photo-1593642532400-2682810df593?w=500&q=80",
+    "category": "Electronics",
+    "stock": 55,
+    "rating": 4.5
+  },
+  {
+    "id": 42,
+    "name": "Smart Plug Strip",
+    "description": "4-outlet Wi-Fi power strip with surge protection. Each socket can be controlled individually.",
+    "price": 22.99,
+    "image": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500&q=80",
+    "category": "Electronics",
+    "stock": 49,
+    "rating": 4.6
+  },
+  {
+    "id": 43,
+    "name": "Mini Drone",
+    "description": "Compact drone with HD camera and easy controls. Great for beginners and hobbyists.",
+    "price": 55.99,
+    "image": "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500&q=80",
+    "category": "Electronics",
+    "stock": 31,
+    "rating": 4.7
+  },
+  {
+    "id": 44,
+    "name": "Bluetooth Tracker Tag",
+    "description": "Attach to keys or wallet and find them via mobile app. Has replaceable battery and alert tone.",
+    "price": 7.99,
+    "image": "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&q=80",
+    "category": "Accessories",
+    "stock": 156,
+    "rating": 4.2
+  },
+  {
+    "id": 45,
+    "name": "Smart Pet Feeder",
+    "description": "Automatic food dispenser with mobile control. Keeps pets fed on schedule.",
+    "price": 64.99,
+    "image": "https://images.unsplash.com/photo-1591871937573-74dbba515c4c?w=500&q=80",
+    "category": "Lifestyle",
+    "stock": 27,
+    "rating": 4.7
+  },
+  {
+    "id": 46,
+    "name": "Electric Scooter",
+    "description": "Foldable e-scooter with LED display and long range. Fun, eco-friendly urban transport.",
+    "price": 359.99,
+    "image": "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=500&q=80",
+    "category": "Lifestyle",
+    "stock": 8,
+    "rating": 4.8
+  },
+  {
+    "id": 47,
+    "name": "3D Printing Pen",
+    "description": "Draw 3D models easily using PLA filament. Great for DIY creators and students.",
+    "price": 24.99,
+    "image": "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=500&q=80",
+    "category": "Electronics",
+    "stock": 44,
+    "rating": 4.4
+  },
+  {
+    "id": 48,
+    "name": "Smart Doorbell",
+    "description": "Wi-Fi video doorbell with two-way talk. Sends notifications to your phone instantly.",
+    "price": 39.99,
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80",
+    "category": "Home",
+    "stock": 52,
+    "rating": 4.6
+  },
+  {
+    "id": 49,
+    "name": "Wireless Charging Clock",
+    "description": "Alarm clock that doubles as a wireless phone charger. Minimalist design for bedside tables.",
+    "price": 17.99,
+    "image": "https://imgs.search.brave.com/wiRM65Vv_CJb2Ky1QTlN0z-93y--Bn4VJlptboFe-zc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFoR09yeVFpRUwu/anBn",
+    "category": "Home",
+    "stock": 83,
+    "rating": 4.5
+  },
+  {
+    "id": 50,
+    "name": "AI Personal Assistant Speaker",
+    "description": "Smart voice assistant speaker for controlling devices and answering queries. Great for connected homes.",
+    "price": 54.99,
+    "image": "https://images.unsplash.com/photo-1543512214-318c7553f230?w=500&q=80",
+    "category": "Electronics",
+    "stock": 37,
+    "rating": 4.7
+  }
+]
