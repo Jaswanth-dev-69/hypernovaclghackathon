@@ -1,15 +1,21 @@
 const supabase = require('../config/supabase');
 const { createUser, getUserById, updateLastLogin } = require('../services/userService');
+const { metrics } = require('../middleware/metricsExporter');
 
 /**
  * Register a new user
  */
 const signup = async (req, res) => {
+  const startTime = Date.now();
+  const env = process.env.NODE_ENV || 'development';
+  
   try {
     const { email, password, username, full_name } = req.body;
 
     // Validate input
     if (!email || !password) {
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -17,6 +23,8 @@ const signup = async (req, res) => {
     }
 
     if (password.length < 6) {
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters'
@@ -36,6 +44,8 @@ const signup = async (req, res) => {
     });
 
     if (authError) {
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: authError.message
@@ -62,6 +72,10 @@ const signup = async (req, res) => {
       console.log('User table entry error (may already exist):', dbError.message);
     }
 
+    // Track successful signup
+    metrics.authAttempts.inc({ status: 'success', type: 'signup', env });
+    metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -72,6 +86,8 @@ const signup = async (req, res) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
+    metrics.authAttempts.inc({ status: 'error', type: 'signup', env });
+    metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -83,11 +99,16 @@ const signup = async (req, res) => {
  * Login user
  */
 const login = async (req, res) => {
+  const startTime = Date.now();
+  const env = process.env.NODE_ENV || 'development';
+  
   try {
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
+      metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -101,6 +122,9 @@ const login = async (req, res) => {
     });
 
     if (authError) {
+      metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      metrics.loginFailures.inc({ reason: 'invalid_credentials', env });
+      metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -118,6 +142,10 @@ const login = async (req, res) => {
       console.log('✅ User logged in:', userData?.email);
     }
 
+    // Track successful login
+    metrics.authAttempts.inc({ status: 'success', type: 'login', env });
+    metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -129,6 +157,8 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
+    metrics.authAttempts.inc({ status: 'error', type: 'login', env });
+    metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

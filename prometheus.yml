@@ -1,0 +1,58 @@
+# Prometheus Configuration for HyperNova Hackathon Project
+# This file configures Prometheus to scrape metrics from your application
+
+global:
+  scrape_interval: 15s       # How often to scrape targets
+  evaluation_interval: 15s   # How often to evaluate rules
+  external_labels:
+    cluster: 'hypernova'
+    environment: 'production'
+
+# Scrape configurations
+scrape_configs:
+  # ============================================================================
+  # LOCAL DEVELOPMENT - Backend
+  # ============================================================================
+  - job_name: 'hypernova-backend-local'
+    static_configs:
+      - targets: ['localhost:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ============================================================================
+  # PRODUCTION - Backend on Render
+  # ============================================================================
+  - job_name: 'hypernova-backend-production'
+    static_configs:
+      - targets: ['hypernovaclghackathon-api.onrender.com']
+    metrics_path: '/metrics'
+    scheme: https
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # ============================================================================
+  # HEALTH CHECKS
+  # ============================================================================
+  - job_name: 'hypernova-health-local'
+    static_configs:
+      - targets: ['localhost:5000']
+    metrics_path: '/metrics/health'
+    scrape_interval: 60s
+
+  - job_name: 'hypernova-health-production'
+    static_configs:
+      - targets: ['hypernovaclghackathon-api.onrender.com']
+    metrics_path: '/metrics/health'
+    scheme: https
+    scrape_interval: 60s
+
+# Alerting configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['localhost:9093']
+
+# Rule files (optional - for creating alerts)
+# rule_files:
+#   - 'alerts.yml'

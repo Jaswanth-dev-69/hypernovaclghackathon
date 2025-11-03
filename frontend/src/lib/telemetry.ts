@@ -190,6 +190,28 @@ export class TelemetryService {
     // Simulate network delay
     const latency = Math.random() * 100 + 50;
     
+    // Send to real Prometheus backend if available
+    const metricsUrl = process.env.NEXT_PUBLIC_API_URL 
+      ? `${process.env.NEXT_PUBLIC_API_URL}/metrics/emit`
+      : 'http://localhost:5000/metrics/emit';
+
+    // Send metrics to backend Prometheus exporter
+    if (typeof window !== 'undefined') {
+      fetch(metricsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          route: endpoint,
+          method: 'POST',
+          status: '200',
+          duration: latency / 1000,
+          env: process.env.NEXT_PUBLIC_ENV || 'development'
+        })
+      }).catch(error => {
+        console.warn('Failed to send metrics to backend:', error);
+      });
+    }
+    
     setTimeout(() => {
       console.log(`🌐 [MOCK API] POST ${endpoint}`, {
         status: 200,

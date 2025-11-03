@@ -6,6 +6,8 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { metricsMiddleware } = require('./middleware/metricsExporter');
+const metricsRoutes = require('./routes/metricsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +22,9 @@ app.use(cors({
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Metrics middleware (track all requests)
+app.use(metricsMiddleware);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -28,6 +33,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Metrics endpoint for Prometheus scraping
+app.use('/metrics', metricsRoutes);
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -49,7 +57,9 @@ app.use(errorHandler);
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL}`);
+  console.log(`� Metrics available at http://localhost:${PORT}/metrics`);
+  console.log(`💊 Health check at http://localhost:${PORT}/metrics/health`);
+  console.log(`�📱 Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`🔐 Supabase URL: ${process.env.SUPABASE_URL}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
 });
