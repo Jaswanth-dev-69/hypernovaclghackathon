@@ -68,9 +68,11 @@ export const getCartItems = async (): Promise<CartItem[]> => {
 };
 
 /**
- * Add product to cart
+ * Add product to cart (via backend API with metrics tracking)
  */
 export const addToCart = async (product: Product, quantity: number = 1): Promise<CartItem | null> => {
+  const startTime = performance.now();
+  
   try {
     const userId = getUserId();
     console.log('[Cart Service] Adding to cart:', { userId, product, quantity });
@@ -81,63 +83,45 @@ export const addToCart = async (product: Product, quantity: number = 1): Promise
       throw error;
     }
 
-    // Check if item already exists
-    console.log('[Cart Service] Checking for existing item...');
-    const { data: existing, error: checkError } = await supabase
-      .from('cart_items')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('product_id', product.id)
-      .single();
+    // Call backend API which tracks metrics
+    const response = await fetch(`${API_URL}/api/cart/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        product,
+        quantity
+      })
+    });
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('[Cart Service] Check error:', checkError);
-      throw checkError;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    try {
+      await fetch(`${API_URL}/metrics/emit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: '/api/cart/add',
+          method: 'POST',
+          status: String(response.status),
+          duration,
+          type: 'cart_operation'
+        })
+      });
+    } catch (metricsError) {
+      console.warn('Failed to emit metrics:', metricsError);
     }
 
-    if (existing) {
-      // Update quantity
-      console.log('[Cart Service] Updating existing item:', existing);
-      const { data, error } = await supabase
-        .from('cart_items')
-        .update({ quantity: existing.quantity + quantity })
-        .eq('id', existing.id)
-        .select()
-        .single();
+    const data = await response.json();
 
-      if (error) {
-        console.error('[Cart Service] Update error:', error);
-        throw error;
-      }
-      console.log('[Cart Service] Update success:', data);
-      return data;
-    } else {
-      // Insert new item
-      console.log('[Cart Service] Inserting new item...');
-      const newItem = {
-        user_id: userId,
-        product_id: product.id,
-        product_name: product.name,
-        product_price: product.price,
-        product_image: product.image,
-        product_description: product.description,
-        quantity: quantity
-      };
-      console.log('[Cart Service] New item data:', newItem);
-      
-      const { data, error } = await supabase
-        .from('cart_items')
-        .insert([newItem])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[Cart Service] Insert error:', error);
-        throw error;
-      }
-      console.log('[Cart Service] Insert success:', data);
-      return data;
+    if (!response.ok) {
+      console.error('[Cart Service] API error:', data);
+      throw new Error(data.message || 'Failed to add to cart');
     }
+
+    console.log('[Cart Service] Success:', data);
+    return data.data;
   } catch (error) {
     console.error('[Cart Service] Add to cart error:', error);
     throw error;
@@ -145,9 +129,11 @@ export const addToCart = async (product: Product, quantity: number = 1): Promise
 };
 
 /**
- * Update cart item quantity
+ * Update cart item quantity (via backend API with metrics tracking)
  */
 export const updateCartItemQuantity = async (cartItemId: string, quantity: number): Promise<CartItem | null> => {
+  const startTime = performance.now();
+  
   try {
     const userId = getUserId();
     if (!userId) {
@@ -158,16 +144,34 @@ export const updateCartItemQuantity = async (cartItemId: string, quantity: numbe
       throw new Error('Quantity must be greater than 0');
     }
 
-    const { data, error } = await supabase
-      .from('cart_items')
-      .update({ quantity })
-      .eq('id', cartItemId)
-      .eq('user_id', userId)
-      .select()
-      .single();
+    const response = await fetch(`${API_URL}/api/cart/update`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, cartItemId, quantity })
+    });
 
-    if (error) throw error;
-    return data;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    try {
+      await fetch(`${API_URL}/metrics/emit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: '/api/cart/update',
+          method: 'PUT',
+          status: String(response.status),
+          duration
+        })
+      });
+    } catch (metricsError) {
+      console.warn('Failed to emit metrics:', metricsError);
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok) throw new Error(data.message || 'Update failed');
+    return data.data;
   } catch (error) {
     console.error('Update cart item error:', error);
     throw error;
@@ -175,9 +179,11 @@ export const updateCartItemQuantity = async (cartItemId: string, quantity: numbe
 };
 
 /**
- * Remove item from cart
+ * Remove item from cart (via backend API with metrics tracking)
  */
 export const removeFromCart = async (cartItemId: string): Promise<boolean> => {
+  const startTime = performance.now();
+  
   try {
     console.log('[Cart Service] Removing item with ID:', cartItemId);
     
@@ -190,15 +196,35 @@ export const removeFromCart = async (cartItemId: string): Promise<boolean> => {
 
     console.log('[Cart Service] User ID:', userId);
 
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('id', cartItemId)
-      .eq('user_id', userId);
+    const response = await fetch(`${API_URL}/api/cart/remove`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, cartItemId })
+    });
 
-    if (error) {
-      console.error('[Cart Service] Delete error:', error);
-      throw error;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    try {
+      await fetch(`${API_URL}/metrics/emit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: '/api/cart/remove',
+          method: 'DELETE',
+          status: String(response.status),
+          duration
+        })
+      });
+    } catch (metricsError) {
+      console.warn('Failed to emit metrics:', metricsError);
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('[Cart Service] Delete error:', data);
+      throw new Error(data.message || 'Failed to remove item');
     }
     
     console.log('[Cart Service] Item removed successfully');
@@ -210,21 +236,43 @@ export const removeFromCart = async (cartItemId: string): Promise<boolean> => {
 };
 
 /**
- * Clear entire cart
+ * Clear entire cart (via backend API with metrics tracking)
  */
 export const clearCart = async (): Promise<boolean> => {
+  const startTime = performance.now();
+  
   try {
     const userId = getUserId();
     if (!userId) {
       throw new Error('User must be logged in');
     }
 
-    const { error } = await supabase
-      .from('cart_items')
-      .delete()
-      .eq('user_id', userId);
+    const response = await fetch(`${API_URL}/api/cart/clear/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-    if (error) throw error;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    try {
+      await fetch(`${API_URL}/metrics/emit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: '/api/cart/clear',
+          method: 'DELETE',
+          status: String(response.status),
+          duration
+        })
+      });
+    } catch (metricsError) {
+      console.warn('Failed to emit metrics:', metricsError);
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok) throw new Error(data.message || 'Failed to clear cart');
     return true;
   } catch (error) {
     console.error('Clear cart error:', error);

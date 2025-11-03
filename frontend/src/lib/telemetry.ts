@@ -128,6 +128,39 @@ export class TelemetryService {
   }
 
   /**
+   * Emit metrics to backend Prometheus endpoint
+   * Use for: tracking auth, cart operations, API calls
+   */
+  public async emitMetric(payload: {
+    route?: string;
+    method?: string;
+    status?: string;
+    duration?: number;
+    type?: string;
+    reason?: string;
+    page?: string;
+    endpoint?: string;
+  }): Promise<void> {
+    const metricsUrl = process.env.NEXT_PUBLIC_API_URL 
+      ? `${process.env.NEXT_PUBLIC_API_URL}/metrics/emit`
+      : 'http://localhost:5000/metrics/emit';
+
+    try {
+      await fetch(metricsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...payload,
+          env: process.env.NEXT_PUBLIC_ENV || 'development'
+        })
+      });
+    } catch (error) {
+      // Don't disrupt UX on metrics failure
+      console.warn('Failed to emit metric:', error);
+    }
+  }
+
+  /**
    * Simulate a critical incident (for demo purposes)
    */
   public simulateIncident(): void {

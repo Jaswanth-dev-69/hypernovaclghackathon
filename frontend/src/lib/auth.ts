@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import telemetry from './telemetry';
 
 export interface AuthUser {
   id: string;
@@ -12,49 +13,100 @@ export interface AuthSession {
   user: AuthUser;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 /**
- * Sign up a new user
+ * Sign up a new user via backend API (tracks metrics)
  */
 export const signUp = async (email: string, password: string, username?: string) => {
+  const startTime = performance.now();
+  
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username: username || email.split('@')[0],
-        },
-      },
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email, 
+        password, 
+        username: username || email.split('@')[0]
+      })
     });
 
-    if (error) {
-      throw error;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    await telemetry.emitMetric({
+      endpoint: '/api/auth/signup',
+      method: 'POST',
+      status: String(response.status),
+      duration
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Signup failed');
     }
 
-    return { user: data.user, session: data.session };
+    return { user: data.data?.user, session: data.data?.session };
   } catch (error) {
     console.error('Signup error:', error);
+    
+    // Track failed signup
+    await telemetry.emitMetric({
+      type: 'signup_failure',
+      reason: error instanceof Error ? error.message : 'unknown'
+    });
+    
     throw error;
   }
 };
 
 /**
- * Sign in an existing user
+ * Sign in an existing user via backend API (tracks metrics)
  */
 export const signIn = async (email: string, password: string) => {
+  const startTime = performance.now();
+  
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
     });
 
-    if (error) {
-      throw error;
+    const duration = (performance.now() - startTime) / 1000;
+    
+    // Track metrics
+    await telemetry.emitMetric({
+      endpoint: '/api/auth/login',
+      method: 'POST',
+      status: String(response.status),
+      duration
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Track failed login with reason
+      await telemetry.emitMetric({
+        type: 'login_failure',
+        reason: response.status === 401 ? 'invalid_credentials' : 'server_error'
+      });
+      
+      throw new Error(data.message || 'Login failed');
     }
 
-    return { user: data.user, session: data.session };
+    return { user: data.data?.user, session: data.data?.session };
   } catch (error) {
     console.error('Sign in error:', error);
+    
+    // Track failed login
+    await telemetry.emitMetric({
+      type: 'login_failure',
+      reason: error instanceof Error ? error.message : 'unknown'
+    });
+    
     throw error;
   }
 };
