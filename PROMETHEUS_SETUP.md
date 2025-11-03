@@ -126,6 +126,7 @@ sum by(reason) (hypernova_login_failures_total)
 4. Import a dashboard:
    - Go to **Create → Import**
    - Use dashboard ID `1860` (Node Exporter Full) for system metrics
+   
    - Or create custom panels with the queries above
 
 ## 🌐 Production Deployment (Render)

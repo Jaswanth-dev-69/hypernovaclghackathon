@@ -1,0 +1,201 @@
+groups:
+  - name: hypernova_alerts
+    interval: 30s
+    rules:
+      # ============================================
+      # AUTHENTICATION ALERTS
+      # ============================================
+      
+      - alert: HighLoginFailureRate
+        expr: rate(hypernova_login_failures_total[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High login failure rate detected"
+          description: "More than 0.5 login failures per second over the last 5 minutes ({{ $value }} failures/sec)"
+          
+      - alert: AuthenticationSystemDown
+        expr: up{job="hypernova-backend-local"} == 0 or up{job="hypernova-backend-production"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Backend authentication system is down"
+          description: "Backend {{ $labels.instance }} has been unreachable for more than 1 minute"
+
+      - alert: NoAuthenticationAttempts
+        expr: rate(hypernova_auth_attempts_total[10m]) == 0 and time() - hypernova_process_start_time_seconds > 600
+        for: 10m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "No authentication attempts in the last 10 minutes"
+          description: "This might indicate a problem with the frontend or user engagement"
+
+      # ============================================
+      # CART OPERATIONS ALERTS
+      # ============================================
+      
+      - alert: HighCartOperationFailureRate
+        expr: rate(hypernova_cart_operations_total{status="failure"}[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High cart operation failure rate"
+          description: "Cart {{ $labels.operation }} failures exceed 0.1 per second: {{ $value }} failures/sec"
+          
+      - alert: SlowCartOperations
+        expr: histogram_quantile(0.95, rate(hypernova_cart_operation_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow cart operations detected"
+          description: "95th percentile of {{ $labels.operation }} duration is {{ $value }}s (threshold: 2s)"
+
+      # ============================================
+      # DATABASE ALERTS
+      # ============================================
+      
+      - alert: HighDatabaseQueryDuration
+        expr: histogram_quantile(0.95, rate(hypernova_database_query_duration_seconds_bucket[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile of {{ $labels.operation }} query duration is {{ $value }}s (threshold: 1s)"
+          
+      - alert: DatabaseConnectionErrors
+        expr: rate(hypernova_database_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "Database connection errors detected"
+          description: "Database errors for {{ $labels.operation }}: {{ $value }} errors/sec"
+
+      # ============================================
+      # HTTP PERFORMANCE ALERTS
+      # ============================================
+      
+      - alert: HighHTTPErrorRate
+        expr: rate(hypernova_http_requests_total{status_code=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "High HTTP 5xx error rate"
+          description: "{{ $labels.method }} {{ $labels.route }}: {{ $value }} errors/sec"
+          
+      - alert: HighHTTPClientErrorRate
+        expr: rate(hypernova_http_requests_total{status_code=~"4.."}[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: client
+        annotations:
+          summary: "High HTTP 4xx error rate"
+          description: "{{ $labels.method }} {{ $labels.route }}: {{ $value }} client errors/sec"
+          
+      - alert: SlowHTTPResponses
+        expr: histogram_quantile(0.95, rate(hypernova_http_request_duration_seconds_bucket[5m])) > 3
+        for: 3m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow HTTP responses detected"
+          description: "95th percentile response time for {{ $labels.route }}: {{ $value }}s (threshold: 3s)"
+
+      # ============================================
+      # SYSTEM RESOURCE ALERTS
+      # ============================================
+      
+      - alert: HighCPUUsage
+        expr: rate(hypernova_process_cpu_user_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+          
+      - alert: HighMemoryUsage
+        expr: (hypernova_process_resident_memory_bytes / 1024 / 1024) > 512
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}MB (threshold: 512MB)"
+          
+      - alert: EventLoopLag
+        expr: hypernova_nodejs_eventloop_lag_seconds > 1
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Node.js event loop lag detected"
+          description: "Event loop lag is {{ $value }}s (threshold: 1s). This may indicate blocking operations."
+
+      # ============================================
+      # APPLICATION HEALTH ALERTS
+      # ============================================
+      
+      - alert: HighApplicationErrorRate
+        expr: rate(hypernova_errors_total[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          category: reliability
+        annotations:
+          summary: "High application error rate"
+          description: "Application errors: {{ $value }} errors/sec across all endpoints"
+          
+      - alert: NoRequestsReceived
+        expr: rate(hypernova_http_requests_total[10m]) == 0 and time() - hypernova_process_start_time_seconds > 600
+        for: 10m
+        labels:
+          severity: warning
+          category: availability
+        annotations:
+          summary: "No HTTP requests received"
+          description: "Backend has not received any requests in the last 10 minutes"
+
+      # ============================================
+      # BUSINESS METRICS ALERTS
+      # ============================================
+      
+      - alert: CartAbandonmentSpike
+        expr: rate(hypernova_cart_operations_total{operation="clear"}[10m]) > 0.5
+        for: 5m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "High cart abandonment rate"
+          description: "Cart clear operations: {{ $value }} per second. May indicate user experience issues."
+          
+      - alert: LowSignupConversionRate
+        expr: (rate(hypernova_auth_attempts_total{type="signup",status="success"}[30m]) / rate(hypernova_auth_attempts_total{type="signup"}[30m])) < 0.5
+        for: 10m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "Low signup conversion rate"
+          description: "Signup success rate is {{ $value | humanizePercentage }}. Check for validation or UX issues."

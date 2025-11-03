@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s       # How often to scrape targets
+  evaluation_interval: 15s   # How often to evaluate rules
+  external_labels:
+    monitor: 'hypernova-monitor'
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load alert rules
+rule_files:
+  - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # ============================================
+  # LOCAL BACKEND (when running on localhost)
+  # ============================================
+  - job_name: 'hypernova-backend-local'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'local-backend'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'development'
+
+  # ============================================
+  # PRODUCTION BACKEND (when deployed to Render)
+  # ============================================
+  - job_name: 'hypernova-backend-production'
+    static_configs:
+      - targets: ['hypernovaclghackathon-api.onrender.com']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    scheme: https
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'render-backend'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'production'
+
+  # ============================================
+  # MONITORING STACK METRICS
+  # ============================================
+  
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Alertmanager
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+
+  # Grafana
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+
+  # Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']

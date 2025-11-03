@@ -1,0 +1,73 @@
+global:
+  resolve_timeout: 5m
+
+# Route configuration
+route:
+  group_by: ['alertname', 'severity', 'category']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'null'
+  
+  # Child routes for different severity levels
+  routes:
+    - match:
+        severity: critical
+      receiver: 'null'
+      continue: true
+      
+    - match:
+        severity: warning
+      receiver: 'null'
+      continue: true
+      
+    - match:
+        severity: info
+      receiver: 'null'
+      continue: true
+
+# Inhibition rules - suppress certain alerts when others are active
+inhibit_rules:
+  # Suppress warning alerts if critical alert is firing for same alertname
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+    
+  # Suppress all alerts if backend is down
+  - source_match:
+      alertname: 'AuthenticationSystemDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+# Receivers configuration
+receivers:
+  # Null receiver - alerts are tracked but no notifications sent
+  - name: 'null'
+
+# ============================================
+# FUTURE: Email configuration template
+# ============================================
+# Uncomment and configure when ready to enable email notifications
+#
+# receivers:
+#   - name: 'email-alerts'
+#     email_configs:
+#       - to: 'your-email@example.com'
+#         from: 'alertmanager@yourdomain.com'
+#         smarthost: 'smtp.gmail.com:587'
+#         auth_username: 'your-email@gmail.com'
+#         auth_identity: 'your-email@gmail.com'
+#         auth_password: 'your-app-password'
+#         headers:
+#           Subject: 'HyperNova Alert: {{ .GroupLabels.alertname }}'
+#         html: |
+#           <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+#           <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+#           <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+#           <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+#           <p><strong>Instance:</strong> {{ .CommonLabels.instance }}</p>
+#
+# Then update route receiver to 'email-alerts' instead of 'null'

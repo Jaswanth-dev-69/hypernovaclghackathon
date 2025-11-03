@@ -31,7 +31,7 @@ const signup = async (req, res) => {
       });
     }
 
-    // Sign up user with Supabase Auth
+    // Sign up user with Supabase Auth (with email confirmation)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -39,7 +39,8 @@ const signup = async (req, res) => {
         data: {
           username: username || email.split('@')[0],
           full_name: full_name || ''
-        }
+        },
+        emailRedirectTo: `${process.env.FRONTEND_URL}/auth/callback`
       }
     });
 
@@ -52,25 +53,9 @@ const signup = async (req, res) => {
       });
     }
 
-    // Create user entry in custom users table
-    // Note: This might be handled automatically by the database trigger
-    // But we'll do it explicitly to ensure it happens
-    try {
-      if (authData.user) {
-        const userData = await createUser({
-          id: authData.user.id,
-          email: authData.user.email,
-          username: username || email.split('@')[0],
-          full_name: full_name || ''
-        });
-
-        console.log('✅ User created in database table:', userData);
-      }
-    } catch (dbError) {
-      // Log error but don't fail signup if table creation fails
-      // (trigger might have already created it)
-      console.log('User table entry error (may already exist):', dbError.message);
-    }
+    // User details will be created automatically by the database trigger (handle_new_user)
+    // when the user confirms their email and is created in auth.users
+    console.log('✅ User signup initiated. Email confirmation required.');
 
     // Track successful signup
     metrics.authAttempts.inc({ status: 'success', type: 'signup', env });
@@ -122,9 +107,26 @@ const login = async (req, res) => {
     });
 
     if (authError) {
+      // Detailed error reason tracking
+      let errorReason = 'unknown_error';
+      if (authError.message.includes('Invalid login credentials')) {
+        errorReason = 'invalid_credentials';
+      } else if (authError.message.includes('Email not confirmed')) {
+        errorReason = 'email_not_confirmed';
+      } else if (authError.message.includes('Too many requests')) {
+        errorReason = 'rate_limit';
+      } else if (authError.message.includes('User not found')) {
+        errorReason = 'user_not_found';
+      }
+
+      // Track metrics with detailed reason
       metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
-      metrics.loginFailures.inc({ reason: 'invalid_credentials', env });
+      metrics.loginFailures.inc({ reason: errorReason, env });
       metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
+      
+      // Log failed attempt with details
+      console.log(`❌ Login failed: ${email} - Reason: ${errorReason}`);
+      
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -145,6 +147,9 @@ const login = async (req, res) => {
     // Track successful login
     metrics.authAttempts.inc({ status: 'success', type: 'login', env });
     metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
+    
+    // Log successful login
+    console.log(`✅ Login successful: ${email}`);
 
     res.status(200).json({
       success: true,

@@ -1,23 +1,23 @@
 const supabase = require('../config/supabase');
 
 /**
- * Create a new user in the users table
+ * Create a new user in the user_details table
  */
 const createUser = async (userData) => {
   try {
-    const { id, email, username, full_name, avatar_url } = userData;
+    const { id, email, username, full_name, avatar_url, phone, address } = userData;
 
     const { data, error } = await supabase
-      .from('users')
+      .from('user_details')
       .insert([
         {
-          id,
+          user_id: id,
           email,
-          username: username || email.split('@')[0],
           full_name: full_name || '',
           avatar_url: avatar_url || null,
-          last_login: new Date().toISOString(),
-          is_active: true
+          phone: phone || null,
+          address: address || null,
+          login_count: 0
         }
       ])
       .select()
@@ -41,9 +41,9 @@ const createUser = async (userData) => {
 const getUserById = async (userId) => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('user_details')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error) {
@@ -64,7 +64,7 @@ const getUserById = async (userId) => {
 const getUserByEmail = async (email) => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('user_details')
       .select('*')
       .eq('email', email)
       .single();
@@ -87,9 +87,12 @@ const getUserByEmail = async (email) => {
 const updateLastLogin = async (userId) => {
   try {
     const { data, error } = await supabase
-      .from('users')
-      .update({ last_login: new Date().toISOString() })
-      .eq('id', userId)
+      .from('user_details')
+      .update({ 
+        last_login_at: new Date().toISOString(),
+        login_count: supabase.raw('login_count + 1')
+      })
+      .eq('user_id', userId)
       .select()
       .single();
 
@@ -110,10 +113,13 @@ const updateLastLogin = async (userId) => {
  */
 const updateUserProfile = async (userId, updates) => {
   try {
+    // Add updated_at timestamp
+    updates.updated_at = new Date().toISOString();
+    
     const { data, error } = await supabase
-      .from('users')
+      .from('user_details')
       .update(updates)
-      .eq('id', userId)
+      .eq('user_id', userId)
       .select()
       .single();
 
@@ -135,7 +141,7 @@ const updateUserProfile = async (userId, updates) => {
 const getAllUsers = async () => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('user_details')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -157,9 +163,9 @@ const getAllUsers = async () => {
 const deleteUser = async (userId) => {
   try {
     const { error } = await supabase
-      .from('users')
+      .from('user_details')
       .delete()
-      .eq('id', userId);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error deleting user:', error);
