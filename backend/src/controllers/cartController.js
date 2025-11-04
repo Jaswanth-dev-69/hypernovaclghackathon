@@ -27,7 +27,8 @@ const getUserCart = async (req, res) => {
 
     if (!userId) {
       // metrics.cartOperations.inc({ operation, status: 'failure', env });
-      metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      await sheetsLogger.logCart(operation, 'failure', 'unknown', { reason: 'missing_user_id' });
       return res.status(400).json({
         success: false,
         message: 'User ID is required'
@@ -37,8 +38,12 @@ const getUserCart = async (req, res) => {
     const cartItems = await getCartItems(userId);
 
     // metrics.cartOperations.inc({ operation, status: 'success', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseQueries.observe({ operation: 'select', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.databaseQueries.observe({ operation: 'select', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    await sheetsLogger.logCart(operation, 'success', userId, { 
+      itemCount: cartItems.length,
+      totalValue: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    });
 
     res.status(200).json({
       success: true,
@@ -48,8 +53,12 @@ const getUserCart = async (req, res) => {
   } catch (error) {
     console.error('Get user cart error:', error);
     // metrics.cartOperations.inc({ operation, status: 'error', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     // metrics.databaseErrors.inc({ operation: 'select', table: 'cart', env });
+    await sheetsLogger.logError('cart_error', error.message, error.stack, { 
+      endpoint: '/api/cart/:userId',
+      userId: req.params.userId || 'unknown'
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch cart items'
@@ -70,7 +79,10 @@ const addItemToCart = async (req, res) => {
 
     if (!userId || !product) {
       // metrics.cartOperations.inc({ operation, status: 'failure', env });
-      metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      await sheetsLogger.logCart(operation, 'failure', userId || 'unknown', { 
+        reason: 'missing_required_fields' 
+      });
       return res.status(400).json({
         success: false,
         message: 'User ID and product are required'
@@ -80,8 +92,12 @@ const addItemToCart = async (req, res) => {
     const cartItem = await addToCart(userId, product, quantity || 1);
 
     // metrics.cartOperations.inc({ operation, status: 'success', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseQueries.observe({ operation: 'insert', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.databaseQueries.observe({ operation: 'insert', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    await sheetsLogger.logCart(operation, 'success', userId, {
+      productId: product.id || product.product_id,
+      quantity: quantity || 1
+    });
 
     res.status(201).json({
       success: true,
@@ -91,8 +107,12 @@ const addItemToCart = async (req, res) => {
   } catch (error) {
     console.error('Add to cart error:', error);
     // metrics.cartOperations.inc({ operation, status: 'error', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     // metrics.databaseErrors.inc({ operation: 'insert', table: 'cart', env });
+    await sheetsLogger.logError('cart_error', error.message, error.stack, {
+      endpoint: '/api/cart/add',
+      userId: req.body.userId || 'unknown'
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to add item to cart'
@@ -113,7 +133,10 @@ const updateCartItem = async (req, res) => {
 
     if (!userId || !cartItemId || !quantity) {
       // metrics.cartOperations.inc({ operation, status: 'failure', env });
-      metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      await sheetsLogger.logCart(operation, 'failure', userId || 'unknown', {
+        reason: 'missing_required_fields'
+      });
       return res.status(400).json({
         success: false,
         message: 'User ID, cart item ID, and quantity are required'
@@ -123,8 +146,12 @@ const updateCartItem = async (req, res) => {
     const updatedItem = await updateCartItemQuantity(userId, cartItemId, quantity);
 
     // metrics.cartOperations.inc({ operation, status: 'success', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseQueries.observe({ operation: 'update', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.databaseQueries.observe({ operation: 'update', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    await sheetsLogger.logCart(operation, 'success', userId, {
+      cartItemId,
+      quantity
+    });
 
     res.status(200).json({
       success: true,
@@ -134,8 +161,12 @@ const updateCartItem = async (req, res) => {
   } catch (error) {
     console.error('Update cart item error:', error);
     // metrics.cartOperations.inc({ operation, status: 'error', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     // metrics.databaseErrors.inc({ operation: 'update', table: 'cart', env });
+    await sheetsLogger.logError('cart_error', error.message, error.stack, {
+      endpoint: '/api/cart/update',
+      userId: req.body.userId || 'unknown'
+    });
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to update cart item'
@@ -156,7 +187,10 @@ const removeCartItem = async (req, res) => {
 
     if (!userId || !cartItemId) {
       // metrics.cartOperations.inc({ operation, status: 'failure', env });
-      metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      await sheetsLogger.logCart(operation, 'failure', userId || 'unknown', {
+        reason: 'missing_required_fields'
+      });
       return res.status(400).json({
         success: false,
         message: 'User ID and cart item ID are required'
@@ -166,8 +200,11 @@ const removeCartItem = async (req, res) => {
     await removeFromCart(userId, cartItemId);
 
     // metrics.cartOperations.inc({ operation, status: 'success', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    await sheetsLogger.logCart(operation, 'success', userId, {
+      cartItemId
+    });
 
     res.status(200).json({
       success: true,
@@ -176,8 +213,12 @@ const removeCartItem = async (req, res) => {
   } catch (error) {
     console.error('Remove cart item error:', error);
     // metrics.cartOperations.inc({ operation, status: 'error', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     // metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
+    await sheetsLogger.logError('cart_error', error.message, error.stack, {
+      endpoint: '/api/cart/remove',
+      userId: req.body.userId || 'unknown'
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to remove item from cart'
@@ -198,7 +239,10 @@ const clearUserCart = async (req, res) => {
 
     if (!userId) {
       // metrics.cartOperations.inc({ operation, status: 'failure', env });
-      metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+      await sheetsLogger.logCart(operation, 'failure', 'unknown', {
+        reason: 'missing_user_id'
+      });
       return res.status(400).json({
         success: false,
         message: 'User ID is required'
@@ -208,8 +252,12 @@ const clearUserCart = async (req, res) => {
     await clearCart(userId);
 
     // metrics.cartOperations.inc({ operation, status: 'success', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
+    await sheetsLogger.logCart(operation, 'success', userId, {
+      itemCount: 0,
+      totalValue: 0
+    });
 
     res.status(200).json({
       success: true,
@@ -218,8 +266,12 @@ const clearUserCart = async (req, res) => {
   } catch (error) {
     console.error('Clear cart error:', error);
     // metrics.cartOperations.inc({ operation, status: 'error', env });
-    metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
+    // metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     // metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
+    await sheetsLogger.logError('cart_error', error.message, error.stack, {
+      endpoint: '/api/cart/:userId/clear',
+      userId: req.params.userId || 'unknown'
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to clear cart'

@@ -2,10 +2,9 @@ const supabase = require('../config/supabase');
 const { createUser, getUserById, updateLastLogin } = require('../services/userService');
 
 // ============================================
-// PROMETHEUS METRICS DISABLED - Using Google Sheets
+// DUAL MONITORING: Prometheus + Google Sheets
 // ============================================
-// const { metrics } = require('../middleware/metricsExporter');
-
+const { metrics } = require('../middleware/metricsExporter');
 const sheetsLogger = require('../utils/googleSheetsLogger');
 
 /**
