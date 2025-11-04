@@ -20,13 +20,8 @@ const signup = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
-      await sheetsLogger.logAuth('signup', 'failure', email || 'unknown', { 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'],
-        reason: 'missing_credentials'
-      });
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -34,13 +29,8 @@ const signup = async (req, res) => {
     }
 
     if (password.length < 6) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
-      await sheetsLogger.logAuth('signup', 'failure', email, { 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'],
-        reason: 'weak_password'
-      });
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters'
@@ -61,13 +51,8 @@ const signup = async (req, res) => {
     });
 
     if (authError) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
-      await sheetsLogger.logAuth('signup', 'failure', email, { 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'],
-        reason: authError.message
-      });
+      metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: authError.message
@@ -79,13 +64,8 @@ const signup = async (req, res) => {
     console.log('✅ User signup initiated. Email confirmation required.');
 
     // Track successful signup
-    // metrics.authAttempts.inc({ status: 'success', type: 'signup', env });
-    // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
-    await sheetsLogger.logAuth('signup', 'success', email, { 
-      ip: req.ip, 
-      userAgent: req.headers['user-agent'],
-      reason: 'email_confirmation_pending'
-    });
+    metrics.authAttempts.inc({ status: 'success', type: 'signup', env });
+    metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
 
     res.status(201).json({
       success: true,
@@ -97,12 +77,8 @@ const signup = async (req, res) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
-    // metrics.authAttempts.inc({ status: 'error', type: 'signup', env });
-    // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
-    await sheetsLogger.logError('signup_error', error.message, error.stack, { 
-      endpoint: '/api/auth/signup',
-      email: req.body?.email || 'unknown'
-    });
+    metrics.authAttempts.inc({ status: 'error', type: 'signup', env });
+    metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -122,13 +98,8 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
-      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
-      await sheetsLogger.logAuth('login', 'failure', email || 'unknown', { 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'],
-        reason: 'missing_credentials'
-      });
+      metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -155,14 +126,9 @@ const login = async (req, res) => {
       }
 
       // Track metrics with detailed reason
-      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
-      // metrics.loginFailures.inc({ reason: errorReason, env });
-      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
-      await sheetsLogger.logAuth('login', 'failure', email, { 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'],
-        reason: errorReason
-      });
+      metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      metrics.loginFailures.inc({ reason: errorReason, env });
+      metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       
       // Log failed attempt with details
       console.log(`❌ Login failed: ${email} - Reason: ${errorReason}`);
@@ -185,13 +151,8 @@ const login = async (req, res) => {
     }
 
     // Track successful login
-    // metrics.authAttempts.inc({ status: 'success', type: 'login', env });
-    // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
-    await sheetsLogger.logAuth('login', 'success', email, { 
-      ip: req.ip, 
-      userAgent: req.headers['user-agent'],
-      reason: 'valid_credentials'
-    });
+    metrics.authAttempts.inc({ status: 'success', type: 'login', env });
+    metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
     
     // Log successful login
     console.log(`✅ Login successful: ${email}`);
@@ -207,12 +168,8 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    // metrics.authAttempts.inc({ status: 'error', type: 'login', env });
-    // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
-    await sheetsLogger.logError('login_error', error.message, error.stack, { 
-      endpoint: '/api/auth/login',
-      email: email || 'unknown'
-    });
+    metrics.authAttempts.inc({ status: 'error', type: 'login', env });
+    metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

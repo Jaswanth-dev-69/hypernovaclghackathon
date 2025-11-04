@@ -6,7 +6,13 @@ const {
   clearCart,
   getCartCount
 } = require('../services/cartService');
-const { metrics } = require('../middleware/metricsExporter');
+
+// ============================================
+// PROMETHEUS METRICS DISABLED - Using Google Sheets
+// ============================================
+// const { metrics } = require('../middleware/metricsExporter');
+
+const sheetsLogger = require('../utils/googleSheetsLogger');
 
 /**
  * Get user's cart items
@@ -20,7 +26,7 @@ const getUserCart = async (req, res) => {
     const userId = req.params.userId;
 
     if (!userId) {
-      metrics.cartOperations.inc({ operation, status: 'failure', env });
+      // metrics.cartOperations.inc({ operation, status: 'failure', env });
       metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
@@ -30,7 +36,7 @@ const getUserCart = async (req, res) => {
 
     const cartItems = await getCartItems(userId);
 
-    metrics.cartOperations.inc({ operation, status: 'success', env });
+    // metrics.cartOperations.inc({ operation, status: 'success', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     metrics.databaseQueries.observe({ operation: 'select', table: 'cart', env }, (Date.now() - startTime) / 1000);
 
@@ -41,9 +47,9 @@ const getUserCart = async (req, res) => {
     });
   } catch (error) {
     console.error('Get user cart error:', error);
-    metrics.cartOperations.inc({ operation, status: 'error', env });
+    // metrics.cartOperations.inc({ operation, status: 'error', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseErrors.inc({ operation: 'select', table: 'cart', env });
+    // metrics.databaseErrors.inc({ operation: 'select', table: 'cart', env });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch cart items'
@@ -63,7 +69,7 @@ const addItemToCart = async (req, res) => {
     const { userId, product, quantity } = req.body;
 
     if (!userId || !product) {
-      metrics.cartOperations.inc({ operation, status: 'failure', env });
+      // metrics.cartOperations.inc({ operation, status: 'failure', env });
       metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
@@ -73,7 +79,7 @@ const addItemToCart = async (req, res) => {
 
     const cartItem = await addToCart(userId, product, quantity || 1);
 
-    metrics.cartOperations.inc({ operation, status: 'success', env });
+    // metrics.cartOperations.inc({ operation, status: 'success', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     metrics.databaseQueries.observe({ operation: 'insert', table: 'cart', env }, (Date.now() - startTime) / 1000);
 
@@ -84,9 +90,9 @@ const addItemToCart = async (req, res) => {
     });
   } catch (error) {
     console.error('Add to cart error:', error);
-    metrics.cartOperations.inc({ operation, status: 'error', env });
+    // metrics.cartOperations.inc({ operation, status: 'error', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseErrors.inc({ operation: 'insert', table: 'cart', env });
+    // metrics.databaseErrors.inc({ operation: 'insert', table: 'cart', env });
     res.status(500).json({
       success: false,
       message: 'Failed to add item to cart'
@@ -106,7 +112,7 @@ const updateCartItem = async (req, res) => {
     const { userId, cartItemId, quantity } = req.body;
 
     if (!userId || !cartItemId || !quantity) {
-      metrics.cartOperations.inc({ operation, status: 'failure', env });
+      // metrics.cartOperations.inc({ operation, status: 'failure', env });
       metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
@@ -116,7 +122,7 @@ const updateCartItem = async (req, res) => {
 
     const updatedItem = await updateCartItemQuantity(userId, cartItemId, quantity);
 
-    metrics.cartOperations.inc({ operation, status: 'success', env });
+    // metrics.cartOperations.inc({ operation, status: 'success', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     metrics.databaseQueries.observe({ operation: 'update', table: 'cart', env }, (Date.now() - startTime) / 1000);
 
@@ -127,9 +133,9 @@ const updateCartItem = async (req, res) => {
     });
   } catch (error) {
     console.error('Update cart item error:', error);
-    metrics.cartOperations.inc({ operation, status: 'error', env });
+    // metrics.cartOperations.inc({ operation, status: 'error', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseErrors.inc({ operation: 'update', table: 'cart', env });
+    // metrics.databaseErrors.inc({ operation: 'update', table: 'cart', env });
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to update cart item'
@@ -149,7 +155,7 @@ const removeCartItem = async (req, res) => {
     const { userId, cartItemId } = req.body;
 
     if (!userId || !cartItemId) {
-      metrics.cartOperations.inc({ operation, status: 'failure', env });
+      // metrics.cartOperations.inc({ operation, status: 'failure', env });
       metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
@@ -159,7 +165,7 @@ const removeCartItem = async (req, res) => {
 
     await removeFromCart(userId, cartItemId);
 
-    metrics.cartOperations.inc({ operation, status: 'success', env });
+    // metrics.cartOperations.inc({ operation, status: 'success', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
 
@@ -169,9 +175,9 @@ const removeCartItem = async (req, res) => {
     });
   } catch (error) {
     console.error('Remove cart item error:', error);
-    metrics.cartOperations.inc({ operation, status: 'error', env });
+    // metrics.cartOperations.inc({ operation, status: 'error', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
+    // metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
     res.status(500).json({
       success: false,
       message: 'Failed to remove item from cart'
@@ -191,7 +197,7 @@ const clearUserCart = async (req, res) => {
     const userId = req.params.userId;
 
     if (!userId) {
-      metrics.cartOperations.inc({ operation, status: 'failure', env });
+      // metrics.cartOperations.inc({ operation, status: 'failure', env });
       metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
@@ -201,7 +207,7 @@ const clearUserCart = async (req, res) => {
 
     await clearCart(userId);
 
-    metrics.cartOperations.inc({ operation, status: 'success', env });
+    // metrics.cartOperations.inc({ operation, status: 'success', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
     metrics.databaseQueries.observe({ operation: 'delete', table: 'cart', env }, (Date.now() - startTime) / 1000);
 
@@ -211,9 +217,9 @@ const clearUserCart = async (req, res) => {
     });
   } catch (error) {
     console.error('Clear cart error:', error);
-    metrics.cartOperations.inc({ operation, status: 'error', env });
+    // metrics.cartOperations.inc({ operation, status: 'error', env });
     metrics.cartOperationDuration.observe({ operation, env }, (Date.now() - startTime) / 1000);
-    metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
+    // metrics.databaseErrors.inc({ operation: 'delete', table: 'cart', env });
     res.status(500).json({
       success: false,
       message: 'Failed to clear cart'
@@ -258,3 +264,4 @@ module.exports = {
   clearUserCart,
   getUserCartCount
 };
+
