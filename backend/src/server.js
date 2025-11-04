@@ -25,12 +25,16 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 // Metrics middleware (track all requests)
 app.use(metricsMiddleware);
 
-// Health check endpoint
+// Health check endpoint (for Render and monitoring)
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
+    status: 'healthy',
     message: 'Server is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0'
   });
 });
 
