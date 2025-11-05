@@ -65,61 +65,60 @@ class GoogleSheetsLogger {
   }
 
   // Log authentication events
+  // Columns: Timestamp, Type, Status, Email, IP, UserAgent, Reason
   async logAuth(type, status, email, metadata = {}) {
     await this.logMetric('Authentication', {
-      type,
-      status,
-      email,
-      ip: metadata.ip || 'unknown',
-      userAgent: metadata.userAgent || 'unknown',
-      reason: metadata.reason || '',
+      type,           // Type column
+      status,         // Status column
+      email,          // Email column
+      ip: metadata.ip || 'unknown',           // IP column
+      userAgent: metadata.userAgent || 'unknown',  // UserAgent column
+      reason: metadata.reason || '',          // Reason column
     });
   }
 
   // Log cart operations
+  // Columns: Timestamp, Operation, Status, UserID, ProductID, Quantity, ItemCount
   async logCart(operation, status, userId, metadata = {}) {
     await this.logMetric('CartOperations', {
-      operation,
-      status,
-      userId,
-      productId: metadata.productId || '',
-      quantity: metadata.quantity || 0,
-      itemCount: metadata.itemCount || 0,
-      totalValue: metadata.totalValue || 0,
+      operation,      // Operation column
+      status,         // Status column
+      userId,         // UserID column
+      productId: metadata.productId || '',     // ProductID column
+      quantity: metadata.quantity || 0,        // Quantity column
+      itemCount: metadata.itemCount || 0,      // ItemCount column
     });
   }
 
   // Log API requests
+  // Columns: Timestamp, Method, Path, StatusCode, Duration, UserID
   async logRequest(method, path, statusCode, duration, userId = 'anonymous') {
     // Skip metrics endpoint to avoid recursion
     if (path === '/metrics') return;
     
     await this.logMetric('APIRequests', {
-      method,
-      path,
-      statusCode,
-      duration: duration.toFixed(3),
-      userId,
+      method,         // Method column
+      path,           // Path column
+      statusCode,     // StatusCode column
+      duration: duration.toFixed(3),  // Duration column
+      userId,         // UserID column
     });
   }
 
   // Log errors
+  // Columns: Timestamp, Type, Message, Stack, Endpoint, UserID
   async logError(type, message, stack, metadata = {}) {
     await this.logMetric('Errors', {
-      type,
-      message,
-      stack: stack?.substring(0, 500), // Limit stack trace length
-      endpoint: metadata.endpoint || 'unknown',
-      userId: metadata.userId || 'anonymous',
-      environment: process.env.NODE_ENV || 'development',
-      ip: metadata.ip || 'unknown',
-      userAgent: metadata.userAgent || 'unknown',
-      errorReason: metadata.errorReason || metadata.reason || 'unknown',
-      errorCode: metadata.errorCode || 'none'
+      type,           // Type column
+      message,        // Message column
+      stack: stack?.substring(0, 500) || '',  // Stack column (limit length)
+      endpoint: metadata.endpoint || 'unknown',  // Endpoint column
+      userId: metadata.userId || 'anonymous',    // UserID column
     });
   }
 
   // Log Prometheus metrics to Google Sheets
+  // Columns: Timestamp, MetricName, MetricType, Value, Labels, Help, Environment, NodeVersion
   async logMetrics(metricsData) {
     if (!this.initialized) {
       console.log('⚠️  Skipping metrics logging (Sheets not initialized)');
@@ -133,14 +132,14 @@ class GoogleSheetsLogger {
       // Create rows from metrics data
       for (const metric of metricsData) {
         const row = [
-          timestamp,
-          metric.name || 'unknown',
-          metric.type || 'unknown',
-          metric.value || 0,
-          JSON.stringify(metric.labels || {}),
-          metric.help || '',
-          process.env.NODE_ENV || 'development',
-          process.version
+          timestamp,                              // Timestamp column
+          metric.name || 'unknown',               // MetricName column
+          metric.type || 'unknown',               // MetricType column
+          metric.value || 0,                      // Value column
+          JSON.stringify(metric.labels || {}),    // Labels column
+          metric.help || '',                      // Help column
+          process.env.NODE_ENV || 'development',  // Environment column
+          process.version                         // NodeVersion column
         ];
         rows.push(row);
       }
