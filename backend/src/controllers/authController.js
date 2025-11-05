@@ -19,13 +19,23 @@ const signup = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
+      const error = new Error('Email and password are required');
+      
+      // Log to BOTH Authentication tab and Errors tab
       await sheetsLogger.logAuth('signup', 'failure', email || 'unknown', { 
         ip: req.ip, 
         userAgent: req.headers['user-agent'],
         reason: 'missing_credentials'
       });
+      await sheetsLogger.logError('signup_validation_error', error.message, error.stack, { 
+        endpoint: '/api/auth/signup',
+        email: email || 'not_provided',
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      
+      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -33,13 +43,23 @@ const signup = async (req, res) => {
     }
 
     if (password.length < 6) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
+      const error = new Error('Password must be at least 6 characters');
+      
+      // Log to BOTH Authentication tab and Errors tab
       await sheetsLogger.logAuth('signup', 'failure', email, { 
         ip: req.ip, 
         userAgent: req.headers['user-agent'],
         reason: 'weak_password'
       });
+      await sheetsLogger.logError('signup_weak_password', error.message, error.stack, { 
+        endpoint: '/api/auth/signup',
+        email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      
+      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters'
@@ -60,13 +80,22 @@ const signup = async (req, res) => {
     });
 
     if (authError) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
-      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
+      // Log to BOTH Authentication tab and Errors tab
       await sheetsLogger.logAuth('signup', 'failure', email, { 
         ip: req.ip, 
         userAgent: req.headers['user-agent'],
         reason: authError.message
       });
+      await sheetsLogger.logError('signup_auth_error', authError.message, authError.stack || new Error().stack, { 
+        endpoint: '/api/auth/signup',
+        email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        errorCode: authError.code
+      });
+      
+      // metrics.authAttempts.inc({ status: 'failure', type: 'signup', env });
+      // metrics.authDuration.observe({ type: 'signup', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: authError.message
@@ -121,13 +150,23 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
-      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
+      const error = new Error('Email and password are required');
+      
+      // Log to BOTH Authentication tab and Errors tab
       await sheetsLogger.logAuth('login', 'failure', email || 'unknown', { 
         ip: req.ip, 
         userAgent: req.headers['user-agent'],
         reason: 'missing_credentials'
       });
+      await sheetsLogger.logError('login_validation_error', error.message, error.stack, { 
+        endpoint: '/api/auth/login',
+        email: email || 'not_provided',
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      });
+      
+      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -153,15 +192,25 @@ const login = async (req, res) => {
         errorReason = 'user_not_found';
       }
 
-      // Track metrics with detailed reason
-      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
-      // metrics.loginFailures.inc({ reason: errorReason, env });
-      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
+      // Log to BOTH Authentication tab and Errors tab
       await sheetsLogger.logAuth('login', 'failure', email, { 
         ip: req.ip, 
         userAgent: req.headers['user-agent'],
         reason: errorReason
       });
+      await sheetsLogger.logError('login_auth_error', authError.message, authError.stack || new Error().stack, { 
+        endpoint: '/api/auth/login',
+        email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        errorReason,
+        errorCode: authError.code
+      });
+      
+      // Track metrics with detailed reason
+      // metrics.authAttempts.inc({ status: 'failure', type: 'login', env });
+      // metrics.loginFailures.inc({ reason: errorReason, env });
+      // metrics.authDuration.observe({ type: 'login', env }, (Date.now() - startTime) / 1000);
       
       // Log failed attempt with details
       console.log(`❌ Login failed: ${email} - Reason: ${errorReason}`);
