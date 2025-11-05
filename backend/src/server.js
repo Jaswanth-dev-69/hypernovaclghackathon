@@ -10,7 +10,7 @@ const errorHandler = require('./middleware/errorHandler');
 // ============================================
 // DUAL MONITORING: Prometheus + Google Sheets
 // ============================================
-const { metricsMiddleware } = require('./middleware/metricsExporter');
+const { metricsMiddleware, register: promRegister } = require('./middleware/metricsExporter');
 const metricsRoutes = require('./routes/metricsRoutes');
 
 // Google Sheets Logger (for IBM Data Prep Kit)
@@ -65,6 +65,30 @@ app.get('/health', (req, res) => {
 // ============================================
 app.use('/metrics', metricsRoutes);
 
+// ============================================
+// MANUAL METRICS LOGGING ENDPOINT (for on-demand metrics capture)
+// ============================================
+app.get('/api/log-metrics', async (req, res) => {
+  try {
+    const metricsText = await promRegister.metrics();
+    await sheetsLogger.logMetricsSnapshot(metricsText);
+    
+    res.status(200).json({
+      success: true,
+      message: '✅ Metrics logged to Google Sheets successfully!',
+      timestamp: new Date().toISOString(),
+      note: 'Check your Google Sheets Metrics tab'
+    });
+  } catch (error) {
+    console.error('❌ Failed to log metrics:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to log metrics',
+      error: error.message
+    });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 
@@ -118,10 +142,39 @@ app.use('*', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
+// ============================================
+// PERIODIC METRICS LOGGING (every 5 minutes)
+// ============================================
+function startMetricsLogging() {
+  const logMetrics = async () => {
+    try {
+      console.log('📊 Logging metrics snapshot to Google Sheets...');
+      const metricsText = await promRegister.metrics();
+      await sheetsLogger.logMetricsSnapshot(metricsText);
+      console.log('✅ Metrics snapshot logged successfully');
+    } catch (error) {
+      console.error('❌ Failed to log metrics snapshot:', error.message);
+    }
+  };
+
+  // Log initial metrics after 10 seconds (give server time to initialize)
+  setTimeout(logMetrics, 10000);
+  
+  // Log metrics every 5 minutes (300000ms)
+  setInterval(logMetrics, 300000);
+  
+  console.log('⏰ Metrics will be logged every 5 minutes');
+}
+
 // Initialize Google Sheets Logger
 sheetsLogger.initialize().then((success) => {
   if (success) {
     console.log('📊 Google Sheets logging enabled');
+    
+    // Start periodic metrics logging if Google Sheets is configured
+    if (process.env.GOOGLE_SHEETS_ID) {
+      startMetricsLogging();
+    }
   } else {
     console.log('⚠️  Google Sheets logging disabled - using console only');
   }
@@ -135,7 +188,7 @@ app.listen(PORT, () => {
   console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`🔐 Supabase URL: ${process.env.SUPABASE_URL}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-  console.log(`� Monitoring: Prometheus (real-time) + Google Sheets ${sheetsLogger.initialized ? '(CSV export)' : '(disabled)'}`);
+  console.log(`📈 Monitoring: Prometheus (real-time) + Google Sheets ${sheetsLogger.initialized ? '(CSV export)' : '(disabled)'}`);
 });
 
 module.exports = app;
