@@ -37,7 +37,10 @@ class GoogleSheetsLogger {
     }
   }
 
+  // Generic log method (DEPRECATED - use specific methods instead)
+  // Each method now handles its own column structure directly
   async logMetric(sheetName, data) {
+    console.warn(`⚠️  logMetric() is deprecated. Use specific methods: logAuth(), logCart(), logRequest(), logError(), logMetrics()`);
     if (!this.initialized) {
       console.log(`⚠️  Skipping log to ${sheetName} (Sheets not initialized)`);
       return;
@@ -65,98 +68,152 @@ class GoogleSheetsLogger {
   }
 
   // Log authentication events
-  // Columns: Timestamp, Type, Status, Email, IP, UserAgent, Reason
+  // YOUR COLUMNS: Timestamp, Type, Status, Email, IP, UserAgent, Reason
   async logAuth(type, status, email, metadata = {}) {
-    await this.logMetric('Authentication', {
-      type,           // Type column
-      status,         // Status column
-      email,          // Email column
-      ip: metadata.ip || 'unknown',           // IP column
-      userAgent: metadata.userAgent || 'unknown',  // UserAgent column
-      reason: metadata.reason || '',          // Reason column
-    });
+    if (!this.initialized) return;
+
+    try {
+      const values = [[
+        new Date().toISOString(),                    // Timestamp
+        type,                                         // Type
+        status,                                       // Status
+        email || 'unknown',                          // Email
+        metadata.ip || 'unknown',                    // IP
+        metadata.userAgent || 'unknown',             // UserAgent
+        metadata.reason || ''                        // Reason
+      ]];
+
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'Authentication!A:G',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values },
+      });
+
+      console.log(`📊 Logged to Authentication: ${type} - ${status}`);
+    } catch (error) {
+      console.error('❌ Failed to log authentication:', error.message);
+    }
   }
 
   // Log cart operations
-  // Columns: Timestamp, Operation, Status, UserID, ProductID, Quantity, ItemCount
+  // YOUR COLUMNS: Timestamp, Operation, Status, UserID, ProductID, Quantity, ItemCount
   async logCart(operation, status, userId, metadata = {}) {
-    await this.logMetric('CartOperations', {
-      operation,      // Operation column
-      status,         // Status column
-      userId,         // UserID column
-      productId: metadata.productId || '',     // ProductID column
-      quantity: metadata.quantity || 0,        // Quantity column
-      itemCount: metadata.itemCount || 0,      // ItemCount column
-    });
+    if (!this.initialized) return;
+
+    try {
+      const values = [[
+        new Date().toISOString(),                    // Timestamp
+        operation,                                    // Operation
+        status,                                       // Status
+        userId || 'unknown',                         // UserID
+        metadata.productId || '',                    // ProductID
+        metadata.quantity || 0,                      // Quantity
+        metadata.itemCount || 0                      // ItemCount
+      ]];
+
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'CartOperations!A:G',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values },
+      });
+
+      console.log(`📊 Logged to CartOperations: ${operation} - ${status}`);
+    } catch (error) {
+      console.error('❌ Failed to log cart operation:', error.message);
+    }
   }
 
   // Log API requests
-  // Columns: Timestamp, Method, Path, StatusCode, Duration, UserID
+  // YOUR COLUMNS: Timestamp, Method, Path, StatusCode, Duration, UserID
   async logRequest(method, path, statusCode, duration, userId = 'anonymous') {
-    // Skip metrics endpoint to avoid recursion
-    if (path === '/metrics') return;
-    
-    await this.logMetric('APIRequests', {
-      method,         // Method column
-      path,           // Path column
-      statusCode,     // StatusCode column
-      duration: duration.toFixed(3),  // Duration column
-      userId,         // UserID column
-    });
+    if (!this.initialized) return;
+    if (path === '/metrics') return; // Skip metrics endpoint
+
+    try {
+      const values = [[
+        new Date().toISOString(),                    // Timestamp
+        method,                                       // Method
+        path,                                         // Path
+        statusCode,                                   // StatusCode
+        duration.toFixed(3),                         // Duration
+        userId                                        // UserID
+      ]];
+
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'APIRequests!A:F',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values },
+      });
+
+      console.log(`📊 Logged to APIRequests: ${method} ${path} - ${statusCode}`);
+    } catch (error) {
+      console.error('❌ Failed to log API request:', error.message);
+    }
   }
 
   // Log errors
-  // Columns: Timestamp, Type, Message, Stack, Endpoint, UserID
+  // YOUR COLUMNS: Timestamp, Type, Message, Stack, Endpoint, UserID
   async logError(type, message, stack, metadata = {}) {
-    await this.logMetric('Errors', {
-      type,           // Type column
-      message,        // Message column
-      stack: stack?.substring(0, 500) || '',  // Stack column (limit length)
-      endpoint: metadata.endpoint || 'unknown',  // Endpoint column
-      userId: metadata.userId || 'anonymous',    // UserID column
-    });
+    if (!this.initialized) return;
+
+    try {
+      const values = [[
+        new Date().toISOString(),                    // Timestamp
+        type,                                         // Type
+        message,                                      // Message
+        stack?.substring(0, 500) || '',              // Stack (truncated)
+        metadata.endpoint || 'unknown',              // Endpoint
+        metadata.userId || 'anonymous'               // UserID
+      ]];
+
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'Errors!A:F',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values },
+      });
+
+      console.log(`📊 Logged to Errors: ${type} - ${message}`);
+    } catch (error) {
+      console.error('❌ Failed to log error:', error.message);
+    }
   }
 
   // Log Prometheus metrics to Google Sheets
-  // Columns: Timestamp, MetricName, MetricType, Value, Labels, Help, Environment, NodeVersion
+  // YOUR COLUMNS: Timestamp, MetricName, MetricType, Value, Labels, Help, Environment, NodeVersion
   async logMetrics(metricsData) {
-    if (!this.initialized) {
-      console.log('⚠️  Skipping metrics logging (Sheets not initialized)');
-      return;
-    }
+    if (!this.initialized) return;
 
     try {
       const timestamp = new Date().toISOString();
       const rows = [];
 
-      // Create rows from metrics data
       for (const metric of metricsData) {
-        const row = [
-          timestamp,                              // Timestamp column
-          metric.name || 'unknown',               // MetricName column
-          metric.type || 'unknown',               // MetricType column
-          metric.value || 0,                      // Value column
-          JSON.stringify(metric.labels || {}),    // Labels column
-          metric.help || '',                      // Help column
-          process.env.NODE_ENV || 'development',  // Environment column
-          process.version                         // NodeVersion column
-        ];
-        rows.push(row);
+        rows.push([
+          timestamp,                                  // Timestamp
+          metric.name || 'unknown',                  // MetricName
+          metric.type || 'unknown',                  // MetricType
+          metric.value || 0,                         // Value
+          JSON.stringify(metric.labels || {}),       // Labels
+          metric.help || '',                         // Help
+          process.env.NODE_ENV || 'development',     // Environment
+          process.version                            // NodeVersion
+        ]);
       }
 
-      // Append all rows at once (batch operation)
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
         range: 'Metrics!A:H',
         valueInputOption: 'USER_ENTERED',
-        resource: {
-          values: rows
-        }
+        resource: { values: rows }
       });
 
-      console.log(`📊 Logged ${rows.length} metrics to Google Sheets Metrics tab`);
+      console.log(`📊 Logged ${rows.length} metrics to Metrics tab`);
     } catch (error) {
-      console.error('❌ Failed to log metrics to Google Sheets:', error.message);
+      console.error('❌ Failed to log metrics:', error.message);
     }
   }
 
