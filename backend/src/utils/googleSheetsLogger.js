@@ -110,7 +110,12 @@ class GoogleSheetsLogger {
       message,
       stack: stack?.substring(0, 500), // Limit stack trace length
       endpoint: metadata.endpoint || 'unknown',
-      userId: metadata.userId || 'unknown',
+      userId: metadata.userId || 'anonymous',
+      environment: process.env.NODE_ENV || 'development',
+      ip: metadata.ip || 'unknown',
+      userAgent: metadata.userAgent || 'unknown',
+      errorReason: metadata.errorReason || metadata.reason || 'unknown',
+      errorCode: metadata.errorCode || 'none'
     });
   }
 
