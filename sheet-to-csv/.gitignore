@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Service account credentials
+service-account.json
+
+# CSV export files (optional - remove if you want to commit them)
+data/*.csv
